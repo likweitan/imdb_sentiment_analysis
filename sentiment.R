@@ -119,8 +119,8 @@ plot_keyword <- as.data.frame(as.matrix(dtm))
 # Splitting the dataset into the Training set and Test set
 set.seed(123)
 split = sample.split(dataset$profit, SplitRatio = 2/3)
-training_set = subset(dataset, split == TRUE)
-test_set = subset(dataset, split == FALSE)
+linear_regression_training_set = subset(dataset, split == TRUE)
+linear_regression_test_set = subset(dataset, split == FALSE)
 
 # Feature Scaling
 # training_set = scale(training_set)
@@ -388,16 +388,16 @@ average_sentiment <- tidy_plot_keyword %>%
 
 # Fitting Simple Linear Regression to the Training set
 regressor = lm(formula = gross ~ budget,
-               data = training_set)
+               data = linear_regression_training_set)
 summary(regressor)
 # Predicting the Test set results
-y_pred = predict(regressor, newdata = test_set)
+y_pred = predict(regressor, newdata = linear_regression_test_set)
 
 # Visualising the Training set results
 ggplot() +
-  geom_point(aes(x = training_set$budget, y = training_set$gross),
+  geom_point(aes(x = linear_regression_training_set$budget, y = linear_regression_training_set$gross),
              colour = 'red') +
-  geom_line(aes(x = training_set$budget, y = predict(regressor, newdata = training_set)),
+  geom_line(aes(x = linear_regression_training_set$budget, y = predict(regressor, newdata = linear_regression_training_set)),
             colour = 'blue') +
   ggtitle('Profit vs Budget (Training set)') +
   xlab('Budget') +
@@ -405,9 +405,9 @@ ggplot() +
 
 # Visualising the Test set results
 ggplot() +
-  geom_point(aes(x = test_set$budget, y = test_set$gross),
+  geom_point(aes(x = linear_regression_test_set$budget, y = linear_regression_test_set$gross),
              colour = 'red') +
-  geom_line(aes(x = training_set$budget, y = predict(regressor, newdata = training_set)),
+  geom_line(aes(x = linear_regression_training_set$budget, y = predict(regressor, newdata = linear_regression_training_set)),
             colour = 'blue') +
   ggtitle('Profit vs Budget (Test set)') +
   xlab('Budget') +
