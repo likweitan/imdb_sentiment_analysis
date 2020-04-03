@@ -1,29 +1,23 @@
-# Logistic Regression
-logistic_regression_dataset <- dataset %>%
-  select(budget,profit,sentiment_value.y)
-logistic_regression_dataset$sentiment_value.y <- NULL
-logistic_regression_dataset <- logistic_regression_dataset[!is.na(logistic_regression_dataset$sentiment),]
-
-set.seed(123)
-split = sample.split(logistic_regression_dataset$sentiment, SplitRatio = 0.75)
-training_set = subset(logistic_regression_dataset, split == TRUE)
-test_set = subset(logistic_regression_dataset, split == FALSE)
-
 # Feature Scaling
 training_set[-3] = scale(training_set[-3])
 test_set[-3] = scale(test_set[-3])
 
 # Fitting Logistic Regression to the Training set
-classifier = glm(formula = sentiment ~ .,
+classifier = glm(formula = profit ~ .,
                  family = binomial,
                  data = training_set)
 
+summary(classifier)
+
+# confident intervals profiled log-likelihood
+confint(classifier)
+
 # Predicting the Test set results
-prob_pred = predict(classifier, type = 'response', newdata = test_set[-3])
+prob_pred = predict(classifier, type = 'response', newdata = test_set[-1])
 y_pred = ifelse(prob_pred > 0.5, 1, 0)
 
 # Making the Confusion Matrix
-cm = table(test_set[, 3], y_pred > 0.5)
+cm = table(test_set[, 1], y_pred > 0.5)
 
 # Visualising the Training set results
 library(ElemStatLearn)
