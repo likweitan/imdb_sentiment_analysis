@@ -179,8 +179,8 @@ line_sentiment_category <- tidy_plot_keyword %>%
                            -1)) %>%
   group_by(line) %>%
   summarise(sentiment_value = mean(sentiment_value)) %>%
-  mutate(sentiment_value = ifelse(sentiment_value > 0, "positive",
-                                  ifelse(sentiment_value < 0, "negative", "neutral"))) %>%
+  #mutate(sentiment_value = ifelse(sentiment_value > 0, "positive",
+                                  #ifelse(sentiment_value < 0, "negative", "neutral"))) %>%
   mutate(id = line) %>%
   data.frame()
 

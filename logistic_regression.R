@@ -1,54 +1,50 @@
-# Feature Scaling
-training_set[-3] = scale(training_set[-3])
-test_set[-3] = scale(test_set[-3])
-
 # Fitting Logistic Regression to the Training set
-classifier = glm(formula = profit ~ .,
-                 family = binomial,
+classifier = glm(formula = profit ~ duration + director_facebook_likes + actor_1_facebook_likes + 
+                   gross  + facenumber_in_poster + num_user_for_reviews + country + 
+                   content_rating + budget + title_year + imdb_score + aspect_ratio + 
+                   movie_facebook_likes + sentiment_value,
+                 family = binomial(link = 'logit'),
                  data = training_set)
 
 summary(classifier)
 
-# confident intervals profiled log-likelihood
-confint(classifier)
 
 # Predicting the Test set results
-prob_pred = predict(classifier, type = 'response', newdata = test_set[-1])
+prob_pred = predict(classifier, type = 'response', newdata = test_set[-20])
 y_pred = ifelse(prob_pred > 0.5, 1, 0)
 
 # Making the Confusion Matrix
-cm = table(test_set[, 1], y_pred > 0.5)
+cm = table(test_set[, 20], y_pred > 0.5)
 
-# Visualising the Training set results
-library(ElemStatLearn)
-set = training_set
-X1 = seq(min(set[, 1]) - 1, max(set[, 1]) + 1, by = 0.01)
-X2 = seq(min(set[, 2]) - 1, max(set[, 2]) + 1, by = 0.01)
-grid_set = expand.grid(X1, X2)
-colnames(grid_set) = c('Age', 'EstimatedSalary')
-prob_set = predict(classifier, type = 'response', newdata = grid_set)
-y_grid = ifelse(prob_set > 0.5, 1, 0)
-plot(set[, -3],
-     main = 'Logistic Regression (Training set)',
-     xlab = 'Age', ylab = 'Estimated Salary',
-     xlim = range(X1), ylim = range(X2))
-contour(X1, X2, matrix(as.numeric(y_grid), length(X1), length(X2)), add = TRUE)
-points(grid_set, pch = '.', col = ifelse(y_grid == 1, 'springgreen3', 'tomato'))
-points(set, pch = 21, bg = ifelse(set[, 3] == 1, 'green4', 'red3'))
+# accuracy
+accuracy <- (cm[[1,1]] + cm[[2,2]])/sum(cm)
+accuracy
 
-# Visualising the Test set results
-library(ElemStatLearn)
-set = test_set
-X1 = seq(min(set[, 1]) - 1, max(set[, 1]) + 1, by = 0.01)
-X2 = seq(min(set[, 2]) - 1, max(set[, 2]) + 1, by = 0.01)
-grid_set = expand.grid(X1, X2)
-colnames(grid_set) = c('Age', 'EstimatedSalary')
-prob_set = predict(classifier, type = 'response', newdata = grid_set)
-y_grid = ifelse(prob_set > 0.5, 1, 0)
-plot(set[, -3],
-     main = 'Logistic Regression (Test set)',
-     xlab = 'Age', ylab = 'Estimated Salary',
-     xlim = range(X1), ylim = range(X2))
-contour(X1, X2, matrix(as.numeric(y_grid), length(X1), length(X2)), add = TRUE)
-points(grid_set, pch = '.', col = ifelse(y_grid == 1, 'springgreen3', 'tomato'))
-points(set, pch = 21, bg = ifelse(set[, 3] == 1, 'green4', 'red3'))
+# Density of probabilities
+ggplot(data.frame(prob_pred) , aes(prob_pred)) + 
+  geom_density(fill = 'lightblue' , alpha = 0.4) +
+  labs(x = 'Predicted Probabilities on test set')
+
+k = 0
+accuracy = c()
+sensitivity = c()
+specificity = c()
+for(i in seq(from = 0.01 , to = 0.5 , by = 0.01)){
+  k = k + 1
+  preds_binomial = ifelse(prob_pred > i , 1 , 0)
+  confmat = table(test_set$profit , preds_binomial)
+  accuracy[k] = sum(diag(confmat)) / sum(confmat)
+  sensitivity[k] = confmat[1 , 1] / sum(confmat[ , 1])
+  specificity[k] = confmat[2 , 2] / sum(confmat[ , 2])
+}
+
+threshold = seq(from = 0.01 , to = 0.5 , by = 0.01)
+
+data = data.frame(threshold , accuracy , sensitivity , specificity)
+head(data)
+
+# Gather accuracy , sensitivity and specificity in one column
+ggplot(gather(data , key = 'Metric' , value = 'Value' , 2:4) , 
+       aes(x = threshold , y = Value , color = Metric)) + 
+  geom_line(size = 1.5)
+

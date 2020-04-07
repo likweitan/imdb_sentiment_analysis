@@ -38,20 +38,21 @@ sentiment_profit <- dataset %>%
   select(profit,sentiment_value) %>%
   group_by(sentiment_value)
 
-sentiment_profit %>%
+sentiment <- sentiment_profit %>%
   #filter(sentiment_value %in% "positive") %>%
   #mutate(profit = ifelse(profit > 0, 1,
   #ifelse(profit < 0, -1, 0))) %>%
   group_by(sentiment_value) %>%
-  summarise(profit_count = sum(profit > 0),
-            loss_count = sum(profit < 0))
+  summarise(profit_count = sum(profit == 1, na.rm =TRUE),
+            loss_count = sum(profit == 0, na.rm = TRUE)) %>%
+  mutate(profit_percent = profit_count / (profit_count + loss_count))
 
 # profit count pie chart
-pie(sent$profit_count, main = "Total profit count",
+pie(sentiment$profit_count, main = "Total profit count",
     labels = c("negative", "neutral", "positive"),
     col = c("red", "blue", "green"))
 # loss count pie chart
-pie(sent$loss_count, main = "Total loss count",
+pie(sentiment$loss_count, main = "Total loss count",
     labels = c("negative", "neutral", "positive"),
     col = c("red", "blue", "green"))
 
@@ -228,3 +229,4 @@ average_sentiment <- tidy_plot_keyword %>%
   select(average_sentiment) %>%
   as.vector() %>%
   unlist()
+
