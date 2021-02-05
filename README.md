@@ -1,4 +1,4 @@
-# imdb_sentiment_analysis
+# IMDB Sentiment Analysis
 
 ## 1	Introduction
 
